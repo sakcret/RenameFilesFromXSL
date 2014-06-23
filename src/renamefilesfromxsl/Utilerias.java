@@ -2,10 +2,13 @@ package renamefilesfromxsl;
 
 import java.io.*;
 import javax.swing.JTextField;
-import jxl.Sheet;
-import jxl.Workbook;
+import java.io.File;
 
 public abstract class Utilerias {
+
+    public static String quitaExtensionFirma(String cadext) {
+        return cadext.substring(0, cadext.lastIndexOf("F."));
+    }
 
     public static String quitaExtension(String cadext) {
         return cadext.substring(0, cadext.lastIndexOf("."));
@@ -77,5 +80,21 @@ public abstract class Utilerias {
             }
         }
         return result;
+    }
+
+    public static boolean buscarArchivo(File[] ficheros, String name_file) {
+        boolean encontrado = false;
+        for (int x = 0; x < ficheros.length; x++) {
+            String file_name = ficheros[x].getName();
+            if (encontrado) {
+                break;
+            }
+            if (file_name.equals(name_file)) {
+                encontrado = true;
+            } else {
+                encontrado = false;
+            }
+        }
+        return encontrado;
     }
 }

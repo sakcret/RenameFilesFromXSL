@@ -4,10 +4,13 @@
  */
 package renamefilesfromxsl;
 
-import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -28,6 +31,9 @@ public class VentanaPrincipal extends javax.swing.JFrame implements PropertyChan
         ruta_destino = "/Users/sakcret/prueba";
         ruta_origen = "/Users/sakcret/fotos";
         ruta_xls = "/Users/sakcret/renombra0.xls";
+        this.b_comprobar.setVisible(false);
+        this.b_comprobar.setEnabled(false);
+        //System.out.println(Utilerias.quitaExtension("123456F.jpg"));
     }
 
     /**
@@ -57,6 +63,9 @@ public class VentanaPrincipal extends javax.swing.JFrame implements PropertyChan
         ta_logs = new javax.swing.JTextArea();
         chb_detalles = new javax.swing.JCheckBox();
         b_renombrar = new javax.swing.JButton();
+        son_firmas = new javax.swing.JCheckBox();
+        b_comprobar = new javax.swing.JButton();
+        b_guardar = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         menu_principal = new javax.swing.JMenu();
         mi_salir = new javax.swing.JMenuItem();
@@ -65,7 +74,7 @@ public class VentanaPrincipal extends javax.swing.JFrame implements PropertyChan
         mi_acercade = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Rename File from XLS v1.0");
+        setTitle("Rename File from XLS v2.0");
         setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
 
         p_nombre_xls.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Selecciona la hoja de calculo con la relación de nombres (.xls) ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Lucida Grande", 1, 14))); // NOI18N
@@ -89,7 +98,7 @@ public class VentanaPrincipal extends javax.swing.JFrame implements PropertyChan
             .add(p_nombre_xlsLayout.createSequentialGroup()
                 .add(26, 26, 26)
                 .add(l_ruta_xls, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 160, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 28, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(t_ruta_xsl, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 582, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(b_ruta_xls, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -141,7 +150,7 @@ public class VentanaPrincipal extends javax.swing.JFrame implements PropertyChan
                 .add(p_rutasLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(l_ruta_destino, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 165, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(l_ruta_origen, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 160, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 27, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(p_rutasLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(t_ruta_origen, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 585, Short.MAX_VALUE)
                     .add(t_ruta_destino))
@@ -164,7 +173,7 @@ public class VentanaPrincipal extends javax.swing.JFrame implements PropertyChan
                     .add(t_ruta_destino, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(b_ruta_destino)
                     .add(l_ruta_destino))
-                .addContainerGap(17, Short.MAX_VALUE))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
 
         pb_progreso.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
@@ -189,6 +198,22 @@ public class VentanaPrincipal extends javax.swing.JFrame implements PropertyChan
         b_renombrar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 b_renombrarActionPerformed(evt);
+            }
+        });
+
+        son_firmas.setText("Son Firmas");
+
+        b_comprobar.setText("Comprobar archivos no renombrados");
+        b_comprobar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                b_comprobarActionPerformed(evt);
+            }
+        });
+
+        b_guardar.setText("Guardar txt de los detalles");
+        b_guardar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                b_guardarActionPerformed(evt);
             }
         });
 
@@ -236,34 +261,48 @@ public class VentanaPrincipal extends javax.swing.JFrame implements PropertyChan
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(17, 17, 17)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(layout.createSequentialGroup()
-                        .add(b_renombrar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 132, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(18, 18, 18)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(chb_detalles)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, pb_progreso, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 739, Short.MAX_VALUE)))
-                    .add(p_rutas, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(p_nombre_xls, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(32, Short.MAX_VALUE))
+                            .add(jScrollPane1)
+                            .add(p_rutas, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(p_nombre_xls, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(son_firmas)
+                                    .add(b_renombrar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 132, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .add(18, 18, 18)
+                                .add(pb_progreso, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 739, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(2, 2, 2))
+                    .add(layout.createSequentialGroup()
+                        .add(chb_detalles)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(b_comprobar)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(b_guardar)))
+                .addContainerGap(15, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(14, 14, 14)
                 .add(p_nombre_xls, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(p_rutas, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(pb_progreso, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 38, Short.MAX_VALUE)
-                    .add(b_renombrar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(chb_detalles)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 124, Short.MAX_VALUE)
-                .add(24, 24, 24))
+                .add(p_rutas, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(son_firmas)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(pb_progreso, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(b_renombrar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(chb_detalles)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(b_comprobar)
+                        .add(b_guardar)))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(18, Short.MAX_VALUE))
         );
 
         pack();
@@ -323,7 +362,7 @@ public class VentanaPrincipal extends javax.swing.JFrame implements PropertyChan
         if (activo == true) {
             this.chb_detalles.setText("Mostrar detalles...");
             this.ta_logs.setVisible(false);
-            
+
         } else {
             this.chb_detalles.setText("Ocultar detalles...");
             this.ta_logs.setVisible(true);
@@ -353,30 +392,66 @@ public class VentanaPrincipal extends javax.swing.JFrame implements PropertyChan
             if (t_ruta_origen.getText().equals(t_ruta_destino.getText())) {
                 JOptionPane.showMessageDialog(null, "La ruta origen no puede ser la misma que la ruta destino.", "Rutas iguales", JOptionPane.WARNING_MESSAGE);
             } else {
+                this.b_comprobar.setVisible(false);
+                this.b_comprobar.setEnabled(false);
                 tarea = new Task();
                 tarea.setRuta_xls(this.t_ruta_xsl.getText());
                 tarea.setRuta_origen(this.t_ruta_origen.getText());
                 tarea.setRuta_destino(this.t_ruta_destino.getText());
+                tarea.setSonFirmas(this.son_firmas.isSelected());
                 tarea.setTa_logs(ta_logs);
                 b_renombrar.setEnabled(false);
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 tarea.addPropertyChangeListener(this);//agregamos PropertyChangeListener a la tarea para saber su progreso
                 tarea.execute();
+                this.b_comprobar.setVisible(true);
+                this.b_comprobar.setEnabled(true);
             }
         }
-
-
     }//GEN-LAST:event_b_renombrarActionPerformed
 
     private void mi_acercadeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mi_acercadeActionPerformed
-         JOptionPane.showMessageDialog(null, "Acerca de Rename File from XLS\n Version 1.0\n Desarrollado por: José Adrian Ruiz Carmona\n sakcret@gmail.com", "Acerca de Rename File from XLS", JOptionPane.INFORMATION_MESSAGE);     
+        JOptionPane.showMessageDialog(null, "Acerca de Rename File from XLS\n Version 2.0\n Desarrollado por: José Adrian Ruiz Carmona\n sakcret@gmail.com", "Acerca de Rename File from XLS", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_mi_acercadeActionPerformed
 
     private void mi_ayudaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mi_ayudaActionPerformed
-       new VentanaAyuda().setVisible(true);
+        new VentanaAyuda().setVisible(true);
     }//GEN-LAST:event_mi_ayudaActionPerformed
 
-     /**
+    private void b_comprobarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_b_comprobarActionPerformed
+        // TODO add your handling code here:
+        try {
+            this.tarea.comprobar();
+        } catch (Exception e) {
+        }
+    }//GEN-LAST:event_b_comprobarActionPerformed
+
+    private void b_guardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_b_guardarActionPerformed
+        // TODO add your handling code here:
+        FileWriter fichero = null;
+        PrintWriter pw = null;
+        try {
+            fichero = new FileWriter(this.ruta_destino + "/noRenombrados.txt");
+            pw = new PrintWriter(fichero);
+            pw.println(this.ta_logs.getText());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                // Nuevamente aprovechamos el finally para 
+                // asegurarnos que se cierra el fichero.
+                if (null != fichero) {
+                    fichero.close();
+                    JOptionPane.showMessageDialog(null, "Se ha creado el archivo con los detalles en la ruta "+this.ruta_destino+"/noRenombrados.txt", "Se creo el archivo con detalles", JOptionPane.INFORMATION_MESSAGE);
+                }
+            } catch (Exception e2) {
+                e2.printStackTrace();
+            }
+        }
+//this.chb_detalles.getText());
+    }//GEN-LAST:event_b_guardarActionPerformed
+
+    /**
      * Metodo necesario para implementar la interfaz PropertyChangeListener el
      * cual me permite cambiar el progreso de la ProgressBar con respecto al
      * progreso de la tarea
@@ -389,16 +464,15 @@ public class VentanaPrincipal extends javax.swing.JFrame implements PropertyChan
                 this.b_renombrar.setEnabled(true);
                 setCursor(null);
             }
-
             /*
              * if (taskOutput != null) { taskOutput.append(String.format(" %d%%
-             * Completo.\n", task.getProgress()));
-            }
+             * Completo.\n", task.getProgress())); }
              */
         }
     }
-   
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton b_comprobar;
+    private javax.swing.JButton b_guardar;
     private javax.swing.JButton b_renombrar;
     private javax.swing.JButton b_ruta_destino;
     private javax.swing.JButton b_ruta_origen;
@@ -419,6 +493,7 @@ public class VentanaPrincipal extends javax.swing.JFrame implements PropertyChan
     private javax.swing.JPanel p_nombre_xls;
     private javax.swing.JPanel p_rutas;
     private javax.swing.JProgressBar pb_progreso;
+    private javax.swing.JCheckBox son_firmas;
     private javax.swing.JTextField t_ruta_destino;
     private javax.swing.JTextField t_ruta_origen;
     private javax.swing.JTextField t_ruta_xsl;
